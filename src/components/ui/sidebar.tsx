@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import { LogoLockup, Icon } from "./shared";
 
 interface SidebarProps {
@@ -7,9 +9,12 @@ interface SidebarProps {
 }
 
 export function Sidebar({ active, onNav, role = "manager" }: SidebarProps) {
+  const { signOut, profile } = useAuth();
+  const navigate = useNavigate();
+
   const navs = role === "manager" ? [
     { id: "dash", icon: "grid", label: "Dashboard" },
-    { id: "cdrs", icon: "receipt", label: "CDRs", badge: 1 },
+    { id: "cdrs", icon: "receipt", label: "CDRs" },
     { id: "sheet", icon: "film", label: "Daily Sheet" },
     { id: "exp", icon: "chart", label: "Expenses" },
     { id: "sett", icon: "download", label: "Settlements" },
@@ -21,6 +26,13 @@ export function Sidebar({ active, onNav, role = "manager" }: SidebarProps) {
     { id: "sett", icon: "upload", label: "Settlements" },
     { id: "rep", icon: "chart", label: "Reports" },
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
+  const initials = (profile?.name || "U").split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase();
 
   return (
     <aside style={{
@@ -39,7 +51,6 @@ export function Sidebar({ active, onNav, role = "manager" }: SidebarProps) {
           <div key={n.id} className={"nav-item " + (active === n.id ? "active" : "")} onClick={() => onNav?.(n.id)}>
             <Icon name={n.icon} size={15} />
             <span style={{ flex: 1 }}>{n.label}</span>
-            {n.badge && <span className="badge b-submit" style={{ height: 16, padding: "0 5px", fontSize: 10 }}>{n.badge}</span>}
           </div>
         ))}
       </nav>
@@ -49,12 +60,15 @@ export function Sidebar({ active, onNav, role = "manager" }: SidebarProps) {
         <div style={{
           width: 28, height: 28, borderRadius: 100, background: "var(--accent)", color: "#fff",
           display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600
-        }}>{role === "manager" ? "SK" : "RR"}</div>
+        }}>{initials}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 12, fontWeight: 600 }}>{role === "manager" ? "Suresh K." : "Raghavendra R."}</div>
-          <div style={{ fontSize: 11, color: "var(--ink-3)" }}>{role === "manager" ? "Sandhya 70mm" : "Friday Pictures"}</div>
+          <div style={{ fontSize: 12, fontWeight: 600 }}>{profile?.name || "User"}</div>
+          <div style={{ fontSize: 11, color: "var(--ink-3)" }}>{role === "manager" ? "Theatre Manager" : "Distributor"}</div>
         </div>
-        <button className="btn btn-ghost btn-sm" style={{ width: 26, padding: 0, justifyContent: "center" }}><Icon name="settings" size={14} /></button>
+        <button className="btn btn-ghost btn-sm" onClick={handleLogout} title="Logout"
+          style={{ width: 26, padding: 0, justifyContent: "center" }}>
+          <Icon name="logout" size={14} />
+        </button>
       </div>
     </aside>
   );

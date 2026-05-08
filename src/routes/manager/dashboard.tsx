@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { fmtINR, fmtQty, pct } from "../../lib/formatting";
 import { useCDRRealtime } from "../../lib/realtime";
-import {
-  Sidebar, PageHeader, StatusBadge, Metric, Icon, ChannelCard,
-} from "../../components/ui/shared";
+import { StatusBadge, Metric, Icon, ChannelCard } from "../../components/ui/shared";
+import { Sidebar } from "../../components/ui/sidebar";
+import { PageHeader } from "../../components/ui/page-header";
 
 interface ShowRow {
   id: string;

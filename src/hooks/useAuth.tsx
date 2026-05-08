@@ -6,12 +6,12 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "../lib/supabase";
-import type { Session, User } from "@supabase/supabase-js";
+import type { Session } from "@supabase/supabase-js";
 import type { UserRole } from "../types/database";
 
 interface AuthState {
   session: Session | null;
-  user: User | null;
+  user: { id: string; phone?: string } | null;
   role: UserRole | null;
   profile: { name: string; phone: string } | null;
   loading: boolean;
@@ -19,6 +19,16 @@ interface AuthState {
   verifyOTP: (phone: string, token: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
+
+const ROLE_MAP: Record<string, UserRole> = {
+  representative: "rep",
+  exhibitor: "manager",
+  distributor: "distributor",
+  producer: "producer",
+  admin: "admin",
+  rep: "rep",
+  manager: "manager",
+};
 
 const AuthContext = createContext<AuthState | null>(null);
 
@@ -29,22 +39,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (s?.user) {
+        fetchProfile(s.user.id);
       } else {
         setLoading(false);
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        if (session?.user) {
-          fetchProfile(session.user.id);
+      (event, s) => {
+        setSession(s);
+        if (event === "SIGNED_OUT") {
+          setRole(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        if (s?.user) {
+          fetchProfile(s.user.id);
         } else {
           setRole(null);
           setProfile(null);
@@ -58,19 +72,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function fetchProfile(userId: string) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("profiles")
         .select("name, role, phone")
         .eq("id", userId)
-        .single() as { data: { name: string; role: string; phone: string } | null; error: Error | null };
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.warn("Profile not found, using default:", error.message);
+        // Profile doesn't exist yet — set defaults
+        setRole("rep");
+        setProfile({ name: "User", phone: "" });
+        setLoading(false);
+        return;
+      }
+
       if (data) {
-        setRole(data.role as UserRole);
-        setProfile({ name: data.name, phone: data.phone });
+        setRole(ROLE_MAP[data.role] || "rep");
+        setProfile({ name: data.name || "User", phone: data.phone || "" });
       }
     } catch (err) {
-      console.error("Failed to fetch profile:", err);
+      console.error("Profile fetch error:", err);
+      setRole("rep");
+      setProfile({ name: "User", phone: "" });
     } finally {
       setLoading(false);
     }
@@ -78,8 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signInWithOTP(phone: string) {
     try {
+      const cleanPhone = phone.replace(/\s/g, "");
       const { error } = await supabase.auth.signInWithOtp({
-        phone: "+91" + phone.replace(/\s/g, ""),
+        phone: "+91" + cleanPhone,
       });
       return { error: error ? new Error(error.message) : null };
     } catch (err) {
@@ -89,8 +114,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function verifyOTP(phone: string, token: string) {
     try {
+      const cleanPhone = phone.replace(/\s/g, "");
       const { error } = await supabase.auth.verifyOtp({
-        phone: "+91" + phone.replace(/\s/g, ""),
+        phone: "+91" + cleanPhone,
         token,
         type: "sms",
       });
@@ -101,7 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Sign out error:", err);
+    }
     setSession(null);
     setRole(null);
     setProfile(null);
@@ -111,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         session,
-        user: session?.user ?? null,
+        user: session?.user ? { id: session.user.id, phone: session.user.phone ?? undefined } : null,
         role,
         profile,
         loading,
