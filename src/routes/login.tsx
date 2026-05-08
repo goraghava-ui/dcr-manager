@@ -127,7 +127,7 @@ export default function LoginPage() {
         {step === "otp" && (
           <>
             <div className="label" style={{ marginBottom: 8 }}>One-time code</div>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 6 }}>
               {otp.map((v, i) => (
                 <input
                   key={i}
@@ -136,7 +136,7 @@ export default function LoginPage() {
                   maxLength={1}
                   value={v}
                   onChange={(e) => handleOtp(i, e.target.value)}
-                  style={{ textAlign: "center", fontSize: 22, fontWeight: 600, height: 52 }}
+                  style={{ textAlign: "center", fontSize: 20, fontWeight: 600, height: 48 }}
                   autoFocus={i === 0}
                 />
               ))}
