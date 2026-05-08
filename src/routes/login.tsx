@@ -24,7 +24,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const refs = useRef<(HTMLInputElement | null)[]>([]);
@@ -50,7 +50,7 @@ export default function LoginPage() {
     const n = [...otp];
     n[i] = v;
     setOtp(n);
-    if (v && i < 3) refs.current[i + 1]?.focus();
+    if (v && i < 5) refs.current[i + 1]?.focus();
     if (n.every((x) => x)) {
       setLoading(true);
       setError("");
@@ -58,7 +58,7 @@ export default function LoginPage() {
       setLoading(false);
       if (error) {
         setError(error.message);
-        setOtp(["", "", "", ""]);
+        setOtp(["", "", "", "", "", ""]);
         refs.current[0]?.focus();
       } else {
         navigate("/");
@@ -82,7 +82,7 @@ export default function LoginPage() {
         <div style={{ color: "var(--ink-3)", fontSize: 14, marginBottom: 32 }}>
           {step === "phone"
             ? "We'll send a one-time code to your registered phone."
-            : <>Enter the 4-digit code sent to <b style={{ color: "var(--ink-1)" }}>+91 {phone}</b>.</>}
+            : <>Enter the 6-digit code sent to <b style={{ color: "var(--ink-1)" }}>+91 {phone}</b>.</>}
         </div>
 
         {error && (
@@ -148,7 +148,7 @@ export default function LoginPage() {
               <span>{loading ? "Verifying…" : "Resend in 0:30"}</span>
               <span
                 style={{ color: "var(--accent)", fontWeight: 500, cursor: "pointer" }}
-                onClick={() => { setStep("phone"); setOtp(["", "", "", ""]); setError(""); }}
+                onClick={() => { setStep("phone"); setOtp(["", "", "", "", "", ""]); setError(""); }}
               >Change number</span>
             </div>
             <div style={{
@@ -165,3 +165,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
