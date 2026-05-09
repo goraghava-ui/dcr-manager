@@ -9,7 +9,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ active, onNav, role = "manager" }: SidebarProps) {
-  const { signOut, profile } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
 
   const navs = role === "manager" ? [
@@ -27,9 +27,8 @@ export function Sidebar({ active, onNav, role = "manager" }: SidebarProps) {
     { id: "rep", icon: "chart", label: "Reports" },
   ];
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/login");
+  const handleLogout = () => {
+    navigate("/logout");
   };
 
   const initials = (profile?.name || "U").split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase();

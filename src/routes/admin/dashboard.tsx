@@ -110,6 +110,10 @@ export default function AdminDashboardPage() {
             <div style={{ fontSize: 12, fontWeight: 600 }}>Admin User</div>
             <div style={{ fontSize: 11, color: "var(--ink-3)" }}>System admin</div>
           </div>
+          <button className="btn btn-ghost btn-sm" onClick={() => navigate("/logout")} title="Logout"
+            style={{ width: 26, padding: 0, justifyContent: "center" }}>
+            <Icon name="logout" size={14} />
+          </button>
         </div>
       </aside>
 

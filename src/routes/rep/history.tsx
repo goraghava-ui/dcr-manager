@@ -122,7 +122,7 @@ export default function HistoryPage() {
           { id: "home", icon: "home", label: "Home", path: "/rep" },
           { id: "new", icon: "plus", label: "New CDR", path: "/rep/cdr/new" },
           { id: "hist", icon: "clock", label: "History", path: "/rep/history", active: true },
-          { id: "me", icon: "user", label: "Profile", path: "/rep" },
+          { id: "me", icon: "logout", label: "Logout", path: "/logout" },
         ].map(t => (
           <div key={t.id} onClick={() => navigate(t.path)} style={{
             flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,

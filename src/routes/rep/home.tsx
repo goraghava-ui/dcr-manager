@@ -158,7 +158,7 @@ export default function RepHomePage() {
           { id: "home", icon: "home", label: "Home", active: true, path: "/rep" },
           { id: "new", icon: "plus", label: "New CDR", active: false, path: "/rep/cdr/new" },
           { id: "hist", icon: "clock", label: "History", active: false, path: "/rep/history" },
-          { id: "me", icon: "user", label: "Profile", active: false, path: "/rep" },
+          { id: "me", icon: "logout", label: "Logout", active: false, path: "/logout" },
         ].map(t => (
           <div key={t.id} onClick={() => navigate(t.path)} style={{
             flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
