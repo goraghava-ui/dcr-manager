@@ -18,8 +18,11 @@ interface PricingClass {
 export default function CDREntryPage() {
   const navigate = useNavigate();
   const { showId } = useParams();
-  const showNumber = parseInt(showId || "1", 10);
+  
+  // Handle "new" route - default to show 1, or parse number
+  const showNumber = showId === "new" ? 1 : (parseInt(showId || "1", 10) || 1);
   const showTimings = ["11:00 AM", "02:30 PM", "06:30 PM", "10:00 PM"];
+  const showDbTimings = ["11:00:00", "14:30:00", "18:30:00", "22:00:00"];
   const showTime = showTimings[(showNumber - 1) % 4] || "06:30 PM";
 
   const [classes, setClasses] = useState<PricingClass[]>([]);
@@ -151,6 +154,10 @@ export default function CDREntryPage() {
       const bookingId = "b0000000-0000-0000-0000-000000000001";
       const todayISO = new Date().toISOString().split("T")[0];
 
+      // Get current user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       // Upload photo
       let photoUrl: string | null = null;
       if (photo) {
@@ -160,10 +167,10 @@ export default function CDREntryPage() {
       }
 
       // Insert CDR
-      const { data: cdr, error } = await supabase.from("cdrs").insert({
+      const { data: cdr, error } = await (supabase as any).from("cdrs").insert({
         theatre_booking_id: bookingId,
         show_date: todayISO,
-        show_timing: showTimings[(showNumber - 1) % 4].replace(" AM", ":00").replace(" PM", ":00"),
+        show_timing: showDbTimings[(showNumber - 1) % 4] || "18:30:00",
         show_number: showNumber,
         film_day: filmDay,
         bms_qty: ch.bms,
@@ -177,9 +184,10 @@ export default function CDREntryPage() {
         district_commission_paise: totals.districtCommissionPaise,
         net_collection_paise: totals.netCollectionPaise,
         status: "submitted",
+        submitted_by: user.id,
         submitted_at: new Date().toISOString(),
         photo_url: photoUrl,
-      } as any).select().single() as any;
+      }).select().single();
 
       if (error) throw error;
 
