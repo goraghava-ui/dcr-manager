@@ -89,7 +89,7 @@ export default function CDREntryPage() {
     [totals.totalQty, ch]
   );
 
-  const canSubmit = channelValidation.valid && (photo !== null || photoPreview !== null) && totals.totalQty > 0;
+  const canSubmit = channelValidation.valid && totals.totalQty > 0;
 
   function setQty(i: number, v: string) {
     const n = parseInt(v || "0", 10) || 0;
