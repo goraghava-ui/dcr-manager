@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#2747d4"/>
+  <rect x="60" y="80" width="392" height="352" rx="32" fill="none" stroke="#fff" stroke-width="24"/>
+  <rect x="60" y="80" width="48" height="352" rx="8" fill="#fff"/>
+  <rect x="404" y="80" width="48" height="352" rx="8" fill="#fff"/>
+  <text x="256" y="310" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="140" fill="#fff">FP</text>
+</svg>
