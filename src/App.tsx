@@ -94,8 +94,8 @@ export default function App() {
                   <Route path="/manager/expenses" element={<RoleRoute allowed={["manager","admin"]}><ExpensesPage /></RoleRoute>} />
 
                   <Route path="/distributor" element={<RoleRoute allowed={["distributor","producer","admin"]}><DistributorDashboardPage /></RoleRoute>} />
-                  <Route path="/distributor/settlements" element={<RoleRoute allowed={["distributor","admin"]}><SettlementsPage /></RoleRoute>} />
-                  <Route path="/distributor/reports" element={<RoleRoute allowed={["distributor","producer","admin"]}><ReportsPage /></RoleRoute>} />
+                  <Route path="/distributor/settlements" element={<RoleRoute allowed={["distributor","manager","admin"]}><SettlementsPage /></RoleRoute>} />
+                  <Route path="/distributor/reports" element={<RoleRoute allowed={["distributor","producer","manager","admin"]}><ReportsPage /></RoleRoute>} />
 
                   <Route path="/admin" element={<RoleRoute allowed={["admin"]}><AdminDashboardPage /></RoleRoute>} />
                   <Route path="/reports/gst" element={<RoleRoute allowed={["distributor","producer","admin"]}><GSTSummaryPage /></RoleRoute>} />

@@ -113,8 +113,12 @@ export default function ManagerDashboardPage() {
   const counterAmt = Math.round(totalCounter * avgPrice);
 
   function handleNav(id: string) {
+    if (id === "dash") navigate("/manager");
+    if (id === "cdrs") navigate("/manager"); // CDRs = dashboard view
     if (id === "sheet") navigate("/manager/daily-sheet");
     if (id === "exp") navigate("/manager/expenses");
+    if (id === "sett") navigate("/distributor/settlements");
+    if (id === "rep") navigate("/distributor/reports");
   }
 
   if (loading && shows.length === 0) return <div style={{ display: "flex", height: "100vh" }}><Sidebar active="dash" onNav={handleNav} role="manager" /><main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ fontSize: 13, color: "var(--ink-3)" }}>Loading dashboard…</div></main></div>;

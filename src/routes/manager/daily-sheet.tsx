@@ -25,7 +25,11 @@ export default function DailySheetPage() {
 
   function handleNav(id: string) {
     if (id === "dash") navigate("/manager");
+    if (id === "cdrs") navigate("/manager");
+    if (id === "sheet") navigate("/manager/daily-sheet");
     if (id === "exp") navigate("/manager/expenses");
+    if (id === "sett") navigate("/distributor/settlements");
+    if (id === "rep") navigate("/distributor/reports");
   }
 
   return (
