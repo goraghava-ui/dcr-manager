@@ -5,6 +5,7 @@ import { fmtINR, fmtQty, pct } from "../../lib/formatting";
 import { useUserContext } from "../../hooks/useUserContext";
 import { useToast } from "../../hooks/useToast";
 import { useCDRRealtime } from "../../lib/realtime";
+import { generateDailySchedule, getShowStatus } from "../../lib/scheduler";
 import { StatusBadge, Metric, Icon, ChannelCard } from "../../components/ui/shared";
 import { Sidebar } from "../../components/ui/sidebar";
 import { PageHeader } from "../../components/ui/page-header";
@@ -47,11 +48,14 @@ export default function ManagerDashboardPage() {
 
       if (err) throw new Error(err.message);
 
-      const showTimings = ["11:00 AM", "02:30 PM", "06:30 PM", "10:00 PM"];
-      const hours = [11, 14.5, 18.5, 22];
+      const showTimings = generateDailySchedule();
+      const hours = showTimings.map(s => {
+        const [h, m] = s.startTime.split(":").map(Number);
+        return h + m / 60;
+      });
       const currentHour = today.getHours() + today.getMinutes() / 60;
 
-      setShows(showTimings.map((time, i) => {
+      setShows(showTimings.map((slot, i) => {
         const cdr = cdrs?.find((c: any) => c.show_number === i + 1);
         if (cdr) {
           const g = cdr.gross_collection_paise / 100;
@@ -59,12 +63,12 @@ export default function ManagerDashboardPage() {
           const commVal = (cdr.bms_commission_paise + cdr.district_commission_paise) / 100;
           const maintVal = cdr.total_qty * 5;
           return {
-            id: cdr.id, showNumber: i + 1, time, status: cdr.status,
+            id: cdr.id, showNumber: i + 1, time: slot.displayTime, status: cdr.status,
             qty: cdr.total_qty, gross: g, gst: gstVal, comm: commVal, maint: maintVal, net: g - gstVal - commVal,
             channel: { bms: cdr.bms_qty, district: cdr.district_qty, counter: cdr.counter_qty, comp: cdr.comp_qty },
           };
         }
-        return { id: `p-${i+1}`, showNumber: i+1, time, status: currentHour > hours[i]+2.5 ? "pending" : "locked", qty: 0, gross: 0, gst: 0, comm: 0, maint: 0, net: 0, channel: null };
+        return { id: `p-${i+1}`, showNumber: i+1, time: slot.displayTime, status: getShowStatus(slot.status, null), qty: 0, gross: 0, gst: 0, comm: 0, maint: 0, net: 0, channel: null };
       }));
       setError(null);
     } catch (err: any) { setError(err.message); } finally { setLoading(false); }
@@ -114,11 +118,11 @@ export default function ManagerDashboardPage() {
 
   function handleNav(id: string) {
     if (id === "dash") navigate("/manager");
-    if (id === "cdrs") navigate("/manager"); // CDRs = dashboard view
+    if (id === "cdrs") navigate("/manager");
     if (id === "sheet") navigate("/manager/daily-sheet");
     if (id === "exp") navigate("/manager/expenses");
-    if (id === "sett") navigate("/distributor/settlements");
-    if (id === "rep") navigate("/distributor/reports");
+    if (id === "sett") navigate("/manager/reports");
+    if (id === "rep") navigate("/manager/reports");
   }
 
   if (loading && shows.length === 0) return <div style={{ display: "flex", height: "100vh" }}><Sidebar active="dash" onNav={handleNav} role="manager" /><main style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ fontSize: 13, color: "var(--ink-3)" }}>Loading dashboard…</div></main></div>;

@@ -28,8 +28,8 @@ export default function DailySheetPage() {
     if (id === "cdrs") navigate("/manager");
     if (id === "sheet") navigate("/manager/daily-sheet");
     if (id === "exp") navigate("/manager/expenses");
-    if (id === "sett") navigate("/distributor/settlements");
-    if (id === "rep") navigate("/distributor/reports");
+    if (id === "sett") navigate("/manager/reports");
+    if (id === "rep") navigate("/manager/reports");
   }
 
   return (

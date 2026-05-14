@@ -13,6 +13,7 @@ const HistoryPage = lazy(() => import("./routes/rep/history"));
 const ManagerDashboardPage = lazy(() => import("./routes/manager/dashboard"));
 const ExpensesPage = lazy(() => import("./routes/manager/expenses"));
 const DailySheetPage = lazy(() => import("./routes/manager/daily-sheet"));
+const ManagerReportsPage = lazy(() => import("./routes/manager/reports"));
 const DistributorDashboardPage = lazy(() => import("./routes/distributor/dashboard"));
 const SettlementsPage = lazy(() => import("./routes/distributor/settlements"));
 const ReportsPage = lazy(() => import("./routes/distributor/reports"));
@@ -92,6 +93,7 @@ export default function App() {
                   <Route path="/manager" element={<RoleRoute allowed={["manager","admin"]}><ManagerDashboardPage /></RoleRoute>} />
                   <Route path="/manager/daily-sheet" element={<RoleRoute allowed={["manager","admin"]}><DailySheetPage /></RoleRoute>} />
                   <Route path="/manager/expenses" element={<RoleRoute allowed={["manager","admin"]}><ExpensesPage /></RoleRoute>} />
+                  <Route path="/manager/reports" element={<RoleRoute allowed={["manager","admin"]}><ManagerReportsPage /></RoleRoute>} />
 
                   <Route path="/distributor" element={<RoleRoute allowed={["distributor","producer","admin"]}><DistributorDashboardPage /></RoleRoute>} />
                   <Route path="/distributor/settlements" element={<RoleRoute allowed={["distributor","manager","admin"]}><SettlementsPage /></RoleRoute>} />

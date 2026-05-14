@@ -72,7 +72,24 @@ export function useUserContext(): UserContext {
       let theatreName = "";
       let theatreCapacity = 0;
 
-      // 1. Find user's theatre
+      // Admin, distributor, producer don't need theatre/booking context
+      if (role === "admin" || role === "distributor" || role === "producer") {
+        setCtx({
+          userId: uid,
+          userName: profile?.name || "User",
+          userRole: role || "admin",
+          userPhone: profile?.phone || "",
+          theatreId: null, theatreName: "All Theatres", theatreCapacity: 0,
+          bookingId: null, filmTitle: null, filmDay: 0, screenNo: 1,
+          distributorSharePct: 50, bmsCommissionPct: 8, districtCommissionPct: 5,
+          pricing: [],
+          loading: false, error: null,
+          refetch: fetchContext,
+        });
+        return;
+      }
+
+      // 1. Find user's theatre (only for rep/manager)
       if (role === "rep") {
         const { data: rep } = await (supabase as any)
           .from("theatre_reps")

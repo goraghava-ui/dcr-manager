@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { fmtINR, fmtQty } from "../../lib/formatting";
@@ -23,7 +23,39 @@ export default function CDREntryPage() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [existingStatus, setExistingStatus] = useState<string | null>(null);
+  const [existingId, setExistingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isReadOnly = existingStatus === "submitted" || existingStatus === "approved";
+
+  // BUG-005: Fetch existing CDR for this show (if already submitted)
+  useEffect(() => {
+    if (!uc.bookingId || uc.loading) return;
+    const todayISO = new Date().toISOString().split("T")[0];
+    (supabase as any).from("cdrs")
+      .select("*, cdr_class_entries(*)")
+      .eq("theatre_booking_id", uc.bookingId)
+      .eq("show_date", todayISO)
+      .eq("show_number", showNumber)
+      .maybeSingle()
+      .then(({ data }: any) => {
+        if (data) {
+          setExistingId(data.id);
+          setExistingStatus(data.status);
+          setCh({ bms: data.bms_qty || 0, district: data.district_qty || 0, counter: data.counter_qty || 0, comp: data.comp_qty || 0 });
+          if (data.photo_url) setPhotoPreview(data.photo_url);
+          // Load class entries
+          if (data.cdr_class_entries?.length && uc.pricing.length) {
+            const newQtys = uc.pricing.map((p: any) => {
+              const entry = data.cdr_class_entries.find((e: any) => e.class_name === p.className);
+              return entry?.qty || 0;
+            });
+            setQtys(newQtys);
+          }
+        }
+      });
+  }, [uc.bookingId, uc.loading, showNumber]);
 
   // Ensure qtys array matches pricing length
   const classes = uc.pricing;
@@ -136,7 +168,7 @@ export default function CDREntryPage() {
           <div style={{ fontSize: 15, fontWeight: 600 }}>Show {showNumber} · {showTime}</div>
           <div style={{ fontSize: 11, color: "var(--ink-3)" }}>{uc.filmTitle || "Film"} · Day {uc.filmDay} · Screen {uc.screenNo}</div>
         </div>
-        <StatusBadge status="draft" />
+        <StatusBadge status={existingStatus || "draft"} />
       </div>
 
       <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 14, flex: 1 }}>
@@ -155,7 +187,7 @@ export default function CDREntryPage() {
                     <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>Sno {c.snoFrom}–{q > 0 ? c.snoFrom + q - 1 : c.snoFrom}</div>
                   </div>
                   <div className="tnum" style={{ textAlign: "right", fontSize: 13, color: "var(--ink-3)" }}>₹{c.price}</div>
-                  <input className="input input-num" value={q} onChange={e => setQty(i, e.target.value)} type="number" min="0" max={c.capacity} />
+                  <input className="input input-num" value={q} onChange={e => setQty(i, e.target.value)} type="number" min="0" max={c.capacity} disabled={isReadOnly} />
                   <div className="tnum" style={{ textAlign: "right", fontWeight: 600, fontSize: 13 }}>{fmtINR(c.price * q)}</div>
                 </div>
               );
@@ -175,7 +207,7 @@ export default function CDREntryPage() {
             {([["BMS", "bms"], ["District", "district"], ["Counter", "counter"], ["Comp", "comp"]] as const).map(([label, key]) => (
               <div key={key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span className="label" style={{ textTransform: "none", fontSize: 11 }}>{label}</span>
-                <input className="input input-num" value={ch[key]} type="number" min="0"
+                <input className="input input-num" value={ch[key]} type="number" min="0" disabled={isReadOnly}
                   onChange={e => setCh({ ...ch, [key]: Math.max(0, parseInt(e.target.value || "0", 10) || 0) })} />
               </div>
             ))}
@@ -222,10 +254,18 @@ export default function CDREntryPage() {
       </div>
 
       <div style={{ position: "sticky", bottom: 0, padding: 12, background: "var(--surface)", borderTop: "1px solid var(--line)", display: "flex", gap: 8 }}>
-        <button className="btn btn-block" onClick={handleSaveDraft} disabled={saving}>Save draft</button>
-        <button className="btn btn-primary btn-block" disabled={!canSubmit || saving} onClick={handleSubmit}>
-          {saving ? "Submitting…" : "Submit CDR"} {!saving && <Icon name="arrowR" size={14} />}
-        </button>
+        {isReadOnly ? (
+          <div style={{ flex: 1, padding: "10px 16px", textAlign: "center", borderRadius: 8, background: existingStatus === "approved" ? "var(--ok-soft)" : "var(--accent-soft)", color: existingStatus === "approved" ? "var(--ok)" : "var(--accent)", fontWeight: 600, fontSize: 13 }}>
+            {existingStatus === "approved" ? "✓ Approved by Manager" : "Submitted — awaiting approval"}
+          </div>
+        ) : (
+          <>
+            <button className="btn btn-block" onClick={handleSaveDraft} disabled={saving}>Save draft</button>
+            <button className="btn btn-primary btn-block" disabled={!canSubmit || saving} onClick={handleSubmit}>
+              {saving ? "Submitting…" : "Submit CDR"} {!saving && <Icon name="arrowR" size={14} />}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
