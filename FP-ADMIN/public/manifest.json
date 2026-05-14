@@ -1,0 +1,31 @@
+{
+  "name": "Friday Pictures · Theatre Collection",
+  "short_name": "FP Collection",
+  "description": "Show-wise CDR tracking and settlement automation for Telugu cinema theatres",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafaf7",
+  "theme_color": "#2747d4",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "lang": "en-IN",
+  "dir": "ltr"
+}
