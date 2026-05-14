@@ -118,10 +118,10 @@ export default function ManagerDashboardPage() {
 
   function handleNav(id: string) {
     if (id === "dash") navigate("/manager");
-    if (id === "cdrs") navigate("/manager");
+    if (id === "cdrs") navigate("/manager/cdrs");
     if (id === "sheet") navigate("/manager/daily-sheet");
     if (id === "exp") navigate("/manager/expenses");
-    if (id === "sett") navigate("/manager/reports");
+    if (id === "sett") navigate("/manager/settlements");
     if (id === "rep") navigate("/manager/reports");
   }
 

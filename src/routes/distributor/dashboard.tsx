@@ -25,6 +25,9 @@ export default function DistributorDashboardPage() {
   const barMax = Math.max(...barData);
 
   function handleNav(id: string) {
+    if (id === "dash") navigate("/distributor");
+    if (id === "films") navigate("/distributor/films");
+    if (id === "thr") navigate("/distributor/theatres");
     if (id === "sett") navigate("/distributor/settlements");
     if (id === "rep") navigate("/distributor/reports");
   }
