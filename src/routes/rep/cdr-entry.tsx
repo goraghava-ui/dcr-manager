@@ -187,7 +187,7 @@ export default function CDREntryPage() {
                     <div style={{ fontSize: 10, color: "var(--ink-4)", fontFamily: "var(--font-mono)" }}>Sno {c.snoFrom}–{q > 0 ? c.snoFrom + q - 1 : c.snoFrom}</div>
                   </div>
                   <div className="tnum" style={{ textAlign: "right", fontSize: 13, color: "var(--ink-3)" }}>₹{c.price}</div>
-                  <input className="input input-num" value={q} onChange={e => setQty(i, e.target.value)} type="number" min="0" max={c.capacity} disabled={isReadOnly} />
+                  <input className="input input-num" value={q} onChange={e => setQty(i, e.target.value)} type="number" min="0" max={c.capacity} disabled={isReadOnly} onFocus={(e) => e.target.select()} />
                   <div className="tnum" style={{ textAlign: "right", fontWeight: 600, fontSize: 13 }}>{fmtINR(c.price * q)}</div>
                 </div>
               );
@@ -207,7 +207,7 @@ export default function CDREntryPage() {
             {([["BMS", "bms"], ["District", "district"], ["Counter", "counter"], ["Comp", "comp"]] as const).map(([label, key]) => (
               <div key={key} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span className="label" style={{ textTransform: "none", fontSize: 11 }}>{label}</span>
-                <input className="input input-num" value={ch[key]} type="number" min="0" disabled={isReadOnly}
+                <input className="input input-num" value={ch[key]} type="number" min="0" disabled={isReadOnly} onFocus={(e) => e.target.select()}
                   onChange={e => setCh({ ...ch, [key]: Math.max(0, parseInt(e.target.value || "0", 10) || 0) })} />
               </div>
             ))}

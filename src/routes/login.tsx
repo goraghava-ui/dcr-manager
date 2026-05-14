@@ -103,7 +103,7 @@ export default function LoginPage() {
               <input
                 className="input input-lg"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => { setPhone(e.target.value); setError(""); }}
                 placeholder="98765 43210"
                 type="tel"
                 maxLength={12}

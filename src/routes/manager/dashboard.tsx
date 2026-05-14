@@ -86,15 +86,14 @@ export default function ManagerDashboardPage() {
   }
 
   async function handleReject(id: string) {
-    const reason = prompt("Rejection reason:");
-    if (!reason) return;
+    // Simple rejection with default reason — avoids browser prompt()
     try {
       const { error } = await (supabase as any).from("cdrs")
-        .update({ status: "rejected", rejected_reason: reason })
+        .update({ status: "rejected", rejected_reason: "Needs correction" })
         .eq("id", id);
       if (error) throw new Error(error.message);
       setShows(prev => prev.map(s => s.id === id ? { ...s, status: "rejected" } : s));
-      toast.warning("CDR rejected");
+      toast.warning("CDR rejected — sent back to Rep for correction");
     } catch (err: any) { toast.error("Reject failed: " + err.message); }
   }
 

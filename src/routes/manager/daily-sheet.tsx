@@ -50,7 +50,7 @@ export default function DailySheetPage() {
           {/* Aggregated CDR table */}
           <div className="app-card">
             <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--line)" }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>Aggregated from 4 approved CDRs</div>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>Daily Sheet · Aggregated CDRs</div>
             </div>
             <table className="tbl">
               <thead><tr><th>Show</th><th>Time</th><th className="num">Tix</th><th className="num">Gross</th><th className="num">GST</th><th className="num">Net</th></tr></thead>

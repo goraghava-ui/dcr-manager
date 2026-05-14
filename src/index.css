@@ -155,9 +155,12 @@ body {
 }
 .btn[disabled],
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
+  background: var(--bg-soft) !important;
+  color: var(--ink-4) !important;
+  border-color: var(--line) !important;
 }
 
 /* ── Inputs ─────────────────────────────── */

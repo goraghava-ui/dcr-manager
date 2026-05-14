@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { fmtINR, fmtQty, fmtCompact, pct } from "../../lib/formatting";
+import { useAuth } from "../../hooks/useAuth";
 import { StatusBadge, Metric, Spark, Icon } from "../../components/ui/shared";
 import { Sidebar } from "../../components/ui/sidebar";
 import { PageHeader } from "../../components/ui/page-header";
@@ -17,6 +18,8 @@ const NETWORK = [
 
 export default function DistributorDashboardPage() {
   const navigate = useNavigate();
+  const { role } = useAuth();
+  const isProducer = role === "producer";
   const totalToday = NETWORK.reduce((a, t) => a + t.today, 0);
   const defaulters = NETWORK.filter(t => t.status === "defaulter").length;
   const late = NETWORK.filter(t => t.status === "late").length;
@@ -44,7 +47,7 @@ export default function DistributorDashboardPage() {
             <select className="select" style={{ width: 140 }} defaultValue="jungle"><option value="jungle">Jungle</option><option>Vetagadu</option><option>Magadheera 2</option></select>
             <button className="btn btn-sm"><Icon name="refresh" size={13} /> Live</button>
             <button className="btn btn-sm"><Icon name="download" size={13} /> Export</button>
-            <button className="btn btn-primary btn-sm" onClick={() => navigate("/distributor/settlements")}>Generate settlements</button>
+            {!isProducer && <button className="btn btn-primary btn-sm" onClick={() => navigate("/distributor/settlements")}>Generate settlements</button>}
           </>}
         />
         <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 18 }}>

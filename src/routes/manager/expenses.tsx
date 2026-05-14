@@ -5,6 +5,7 @@ import { fmtINR } from "../../lib/formatting";
 import { useUserContext } from "../../hooks/useUserContext";
 import { useToast } from "../../hooks/useToast";
 import { Icon, LogoLockup } from "../../components/ui/shared";
+import { Sidebar } from "../../components/ui/sidebar";
 
 const CATEGORIES = ["Electricity", "Cleaning", "Staff salary", "Maintenance", "Snacks/canteen", "Other"];
 const MODES = ["Cash", "UPI", "Bank", "Cheque"];
@@ -106,8 +107,19 @@ export default function ExpensesPage() {
     total: expenses.filter(e => e.category === c).reduce((a, e) => a + e.amount_paise, 0),
   })).filter(c => c.total > 0);
 
+  function handleNav(id: string) {
+    if (id === "dash") navigate("/manager");
+    if (id === "cdrs") navigate("/manager/cdrs");
+    if (id === "sheet") navigate("/manager/daily-sheet");
+    if (id === "exp") navigate("/manager/expenses");
+    if (id === "sett") navigate("/manager/settlements");
+    if (id === "rep") navigate("/manager/reports");
+  }
+
   return (
-    <div style={{ background: "var(--bg)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", height: "100vh" }}>
+      <Sidebar active="exp" onNav={handleNav} role="manager" />
+      <main style={{ flex: 1, overflow: "auto", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
       {/* Header */}
       <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, background: "var(--surface)", borderBottom: "1px solid var(--line)" }}>
         <button className="btn btn-ghost btn-sm" onClick={() => navigate("/manager")} style={{ width: 30, padding: 0, justifyContent: "center" }}><Icon name="arrowL" size={16} /></button>
@@ -204,7 +216,7 @@ export default function ExpensesPage() {
               </div>
               <div>
                 <label className="label">Amount (₹)</label>
-                <input className="input" type="number" min="1" placeholder="0" value={amount}
+                <input className="input" type="number" min="1" placeholder="0" onFocus={(e) => e.target.select()} value={amount}
                   onChange={e => setAmount(e.target.value)} style={{ width: "100%", height: 40, fontSize: 18, fontWeight: 600 }} autoFocus />
               </div>
               <div>
@@ -248,6 +260,7 @@ export default function ExpensesPage() {
       }}>
         <span style={{ fontSize: 18 }}>+</span> Add expense
       </button>
+      </main>
     </div>
   );
 }
