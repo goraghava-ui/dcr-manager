@@ -13,7 +13,7 @@ const SAMPLE_THEATRES = [
   { id: "t2", name: "Devi 70mm", city: "Hyderabad", territory: "Nizam", capacity: 580, screens: 1, manager: "Ravi P.", active: true },
   { id: "t3", name: "Sudarshan 35mm", city: "Secunderabad", territory: "Nizam", capacity: 480, screens: 1, manager: "Venkat M.", active: true },
   { id: "t4", name: "Sri Ramakrishna", city: "Karimnagar", territory: "Nizam", capacity: 420, screens: 1, manager: "Krishna R.", active: true },
-  { id: "t5", name: "Laxmi Talkies", city: "Khammam", territory: "Nizam", capacity: 360, screens: 1, manager: "—", active: false },
+  { id: "t5", name: "Laxmi Talkies", city: "Khammam", territory: "Nizam", capacity: 360, screens: 1, manager: "-", active: false },
 ];
 
 const SAMPLE_FILMS = [
@@ -25,27 +25,27 @@ const SAMPLE_FILMS = [
 const SAMPLE_USERS = [
   { id: "u1", name: "Ramesh K.", phone: "98765 43210", role: "rep", theatre: "Sandhya 70mm", active: true },
   { id: "u2", name: "Suresh K.", phone: "98765 43211", role: "manager", theatre: "Sandhya 70mm", active: true },
-  { id: "u3", name: "Raghavendra R.", phone: "98765 43212", role: "distributor", theatre: "—", active: true },
+  { id: "u3", name: "Raghavendra R.", phone: "98765 43212", role: "distributor", theatre: "-", active: true },
   { id: "u4", name: "Kiran B.", phone: "90XXX XX112", role: "rep", theatre: "Laxmi Talkies", active: true },
   { id: "u5", name: "Ravi P.", phone: "91XXX XX445", role: "manager", theatre: "Devi 70mm", active: true },
-  { id: "u6", name: "Admin User", phone: "98765 43213", role: "admin", theatre: "—", active: true },
+  { id: "u6", name: "Admin User", phone: "98765 43213", role: "admin", theatre: "-", active: true },
 ];
 
 const SAMPLE_AUDIT = [
-  { id: "a1", ts: "5 May 14:32", user: "Suresh K.", action: "update", table: "cdrs", record: "Show #3", detail: "status: submitted → approved" },
-  { id: "a2", ts: "5 May 14:18", user: "Ramesh K.", action: "create", table: "cdrs", record: "Show #3", detail: "CDR submitted — 358 tix, ₹65,620" },
-  { id: "a3", ts: "5 May 11:45", user: "Suresh K.", action: "update", table: "cdrs", record: "Show #2", detail: "status: submitted → approved" },
-  { id: "a4", ts: "5 May 11:30", user: "Ramesh K.", action: "create", table: "cdrs", record: "Show #2", detail: "CDR submitted — 348 tix, ₹63,100" },
-  { id: "a5", ts: "5 May 09:20", user: "Suresh K.", action: "update", table: "cdrs", record: "Show #1", detail: "status: submitted → approved" },
-  { id: "a6", ts: "5 May 09:05", user: "Ramesh K.", action: "create", table: "cdrs", record: "Show #1", detail: "CDR submitted — 312 tix, ₹56,240" },
-  { id: "a7", ts: "4 May 22:10", user: "Admin User", action: "update", table: "theatre_pricing", record: "Sandhya 70mm", detail: "Premium price: ₹230 → ₹250 (effective 5 May)" },
-  { id: "a8", ts: "4 May 18:00", user: "Raghavendra R.", action: "create", table: "settlements", record: "JNG-SDH-W1", detail: "Settlement generated — ₹5,84,200" },
+  { id: "a1", ts: "5 May 14:32", user: "Suresh K.", action: "update", table: "cdrs", record: "Show #3", detail: "status: submitted  approved" },
+  { id: "a2", ts: "5 May 14:18", user: "Ramesh K.", action: "create", table: "cdrs", record: "Show #3", detail: "CDR submitted - 358 tix, ?65,620" },
+  { id: "a3", ts: "5 May 11:45", user: "Suresh K.", action: "update", table: "cdrs", record: "Show #2", detail: "status: submitted  approved" },
+  { id: "a4", ts: "5 May 11:30", user: "Ramesh K.", action: "create", table: "cdrs", record: "Show #2", detail: "CDR submitted - 348 tix, ?63,100" },
+  { id: "a5", ts: "5 May 09:20", user: "Suresh K.", action: "update", table: "cdrs", record: "Show #1", detail: "status: submitted  approved" },
+  { id: "a6", ts: "5 May 09:05", user: "Ramesh K.", action: "create", table: "cdrs", record: "Show #1", detail: "CDR submitted - 312 tix, ?56,240" },
+  { id: "a7", ts: "4 May 22:10", user: "Admin User", action: "update", table: "theatre_pricing", record: "Sandhya 70mm", detail: "Premium price: ?230  ?250 (effective 5 May)" },
+  { id: "a8", ts: "4 May 18:00", user: "Raghavendra R.", action: "create", table: "settlements", record: "JNG-SDH-W1", detail: "Settlement generated - ?5,84,200" },
 ];
 
 const SAMPLE_CONFIG = [
-  { key: "gst_rate_high", label: "GST rate (≥₹100 tickets)", value: "18%", detail: "CGST 9% + SGST 9%" },
-  { key: "gst_rate_low", label: "GST rate (<₹100 tickets)", value: "12%", detail: "CGST 6% + SGST 6%" },
-  { key: "default_maintenance", label: "Default maintenance/ticket", value: "₹5.00", detail: "Range ₹2–₹10, per theatre" },
+  { key: "gst_rate_high", label: "GST rate (�?100 tickets)", value: "18%", detail: "CGST 9% + SGST 9%" },
+  { key: "gst_rate_low", label: "GST rate (<?100 tickets)", value: "12%", detail: "CGST 6% + SGST 6%" },
+  { key: "default_maintenance", label: "Default maintenance/ticket", value: "?5.00", detail: "Range ?2-?10, per theatre" },
   { key: "bms_commission", label: "BMS commission", value: "8%", detail: "Default, configurable per deal" },
   { key: "district_commission", label: "District commission", value: "5%", detail: "Default, configurable per deal" },
   { key: "settlement_period", label: "Settlement period", value: "Weekly", detail: "Monday to Sunday" },
@@ -144,7 +144,7 @@ function TheatresTab() {
                 <td>{t.territory}</td>
                 <td className="num">{fmtQty(t.capacity)}</td>
                 <td className="num">{t.screens}</td>
-                <td style={{ color: t.manager === "—" ? "var(--ink-4)" : "var(--ink-2)" }}>{t.manager}</td>
+                <td style={{ color: t.manager === "-" ? "var(--ink-4)" : "var(--ink-2)" }}>{t.manager}</td>
                 <td><StatusBadge status={t.active ? "approved" : "rejected"} /></td>
                 <td className="num">
                   <button className="btn btn-ghost btn-sm"><Icon name="settings" size={13} /></button>
@@ -205,7 +205,7 @@ function UsersTab() {
                     textTransform: "capitalize",
                   }}>{u.role}</span>
                 </td>
-                <td style={{ color: u.theatre === "—" ? "var(--ink-4)" : "var(--ink-2)" }}>{u.theatre}</td>
+                <td style={{ color: u.theatre === "-" ? "var(--ink-4)" : "var(--ink-2)" }}>{u.theatre}</td>
                 <td><StatusBadge status={u.active ? "approved" : "rejected"} /></td>
                 <td className="num"><button className="btn btn-ghost btn-sm"><Icon name="settings" size={13} /></button></td>
               </tr>
@@ -238,10 +238,10 @@ function ConfigTab() {
       </div>
 
       <div style={{ marginTop: 24 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Pricing Matrix — Sandhya 70mm</div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Pricing Matrix - Sandhya 70mm</div>
         <div className="app-card">
           <table className="tbl">
-            <thead><tr><th>Class</th><th className="num">Price (₹)</th><th className="num">Sno from</th><th className="num">Sno to</th><th className="num">Capacity</th><th>GST slab</th><th>Effective from</th><th></th></tr></thead>
+            <thead><tr><th>Class</th><th className="num">Price (?)</th><th className="num">Sno from</th><th className="num">Sno to</th><th className="num">Capacity</th><th>GST slab</th><th>Effective from</th><th></th></tr></thead>
             <tbody>
               {[
                 { cls: "Premium", price: 250, from: 1, to: 168, cap: 168, gst: "18%", eff: "1 Jan 2026" },
@@ -270,9 +270,9 @@ function ConfigTab() {
 
 function AuditTab() {
   return (<>
-    <PageHeader title="Audit Log" sub="Every edit, delete, and status change — tamper-proof, insert-only" breadcrumb={["Admin", "Audit Log"]}
+    <PageHeader title="Audit Log" sub="Every edit, delete, and status change - tamper-proof, insert-only" breadcrumb={["Admin", "Audit Log"]}
       actions={<>
-        <input className="input" style={{ width: 200, height: 28, fontSize: 12 }} placeholder="Search actions…" readOnly />
+        <input className="input" style={{ width: 200, height: 28, fontSize: 12 }} placeholder="Search actions." readOnly />
         <button className="btn btn-sm"><Icon name="download" size={13} /> Export</button>
       </>}
     />
@@ -303,3 +303,4 @@ function AuditTab() {
     </div>
   </>);
 }
+
