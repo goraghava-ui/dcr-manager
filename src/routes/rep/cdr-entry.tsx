@@ -103,7 +103,18 @@ export default function CDREntryPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated — please login again.");
 
+      // Check if CDR already exists for this show today
       const todayISO = new Date().toISOString().split("T")[0];
+      const { data: existing } = await (supabase as any).from("cdrs")
+        .select("id, status")
+        .eq("theatre_booking_id", uc.bookingId)
+        .eq("show_date", todayISO)
+        .eq("show_number", showNumber)
+        .maybeSingle();
+
+      if (existing?.status === "approved") {
+        throw new Error("This CDR is already approved. Cannot modify.");
+      }
 
       // Upload photo if present
       let photoUrl: string | null = null;
@@ -113,8 +124,7 @@ export default function CDREntryPage() {
         photoUrl = path;
       }
 
-      // Insert CDR
-      const { data: cdr, error } = await (supabase as any).from("cdrs").insert({
+      const cdrPayload = {
         theatre_booking_id: uc.bookingId,
         show_date: todayISO,
         show_timing: showDbTimings[(showNumber - 1) % 4] || "18:30:00",
@@ -131,12 +141,24 @@ export default function CDREntryPage() {
         submitted_by: user.id,
         submitted_at: new Date().toISOString(),
         photo_url: photoUrl,
-      }).select().single();
+      };
+
+      let cdr: any;
+      let error: any;
+
+      if (existing?.id) {
+        // Update existing CDR
+        const res = await (supabase as any).from("cdrs").update(cdrPayload).eq("id", existing.id).select().single();
+        cdr = res.data; error = res.error;
+        // Delete old class entries
+        if (!error) await (supabase as any).from("cdr_class_entries").delete().eq("cdr_id", existing.id);
+      } else {
+        // Insert new CDR
+        const res = await (supabase as any).from("cdrs").insert(cdrPayload).select().single();
+        cdr = res.data; error = res.error;
+      }
 
       if (error) {
-        if (error.message?.includes("unique") || error.message?.includes("duplicate")) {
-          throw new Error("This show's CDR was already submitted today.");
-        }
         throw new Error(error.message || "Database error");
       }
 
