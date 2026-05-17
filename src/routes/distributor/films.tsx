@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { fmtINR } from "../../lib/formatting";
 import { useToast } from "../../hooks/useToast";
 import { StatusBadge, Icon } from "../../components/ui/shared";
 import { Sidebar } from "../../components/ui/sidebar";

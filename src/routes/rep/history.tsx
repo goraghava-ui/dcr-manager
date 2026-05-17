@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase";
 import { fmtINR, fmtQty } from "../../lib/formatting";
 import { useUserContext } from "../../hooks/useUserContext";
 import { useToast } from "../../hooks/useToast";
-import { LogoLockup, StatusBadge, Icon } from "../../components/ui/shared";
+import { StatusBadge, Icon } from "../../components/ui/shared";
 
 interface CDRItem {
   id: string; show_date: string; show_number: number;
