@@ -32,7 +32,7 @@ export default function RepHomePage() {
       const todayISO = today.toISOString().split("T")[0];
       const { data: cdrs, error: err } = await (supabase as any)
         .from("cdrs").select("*")
-        .eq("theatre_booking_id", uc.bookingId)
+        .eq("theatre_booking_id", uc.bookingId || "00000000-0000-0000-0000-000000000000")
         .eq("show_date", todayISO)
         .order("show_number");
 

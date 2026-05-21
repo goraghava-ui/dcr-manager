@@ -74,6 +74,8 @@ export function useUserContext(): UserContext {
 
   async function fetchContext() {
     if (!user?.id) return;
+    const uid = user.id;
+    if (!uid || uid === "null" || uid === "undefined") return;
 
     setCtx((p) => ({ ...p, loading: true, error: null }));
 
@@ -140,7 +142,7 @@ export function useUserContext(): UserContext {
       }
 
       // 2. Fetch theatre details
-      if (theatreId) {
+      if (theatreId && theatreId !== "null") {
         const { data: theatre } = await (supabase as any)
           .from("theatres")
           .select("name, total_seats")
@@ -162,7 +164,7 @@ export function useUserContext(): UserContext {
       let numShows = 4;
       let showGapMinutes = 270;
 
-      if (theatreId) {
+      if (theatreId && theatreId !== "null") {
         const today = new Date().toISOString().split("T")[0];
         const { data: booking } = await (supabase as any)
           .from("theatre_bookings")
@@ -201,7 +203,7 @@ export function useUserContext(): UserContext {
 
       // 4. Fetch pricing for this theatre
       let pricing: UserContext["pricing"] = [];
-      if (theatreId) {
+      if (theatreId && theatreId !== "null") {
         const { data: prices } = await (supabase as any)
           .from("theatre_pricing")
           .select("class_name, price, sno_from, sno_to, capacity, display_order")
