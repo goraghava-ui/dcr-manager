@@ -5,7 +5,7 @@ import { useToast } from "../../hooks/useToast";
 import { Icon } from "../../components/ui/shared";
 import { PageHeader } from "../../components/ui/page-header";
 
-type Tab = "theatres" | "films" | "users" | "bookings" | "pricing" | "reps" | "config" | "audit";
+type Tab = "theatres" | "films" | "users" | "bookings" | "pricing" | "reps" | "mgrs" | "config" | "audit";
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "theatres", label: "Theatres", icon: "building" },
   { id: "films", label: "Films", icon: "film" },
@@ -13,6 +13,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "bookings", label: "Film → Theatre", icon: "link" },
   { id: "pricing", label: "Pricing", icon: "receipt" },
   { id: "reps", label: "Rep → Theatre", icon: "user" },
+  { id: "mgrs", label: "Mgr → Theatre", icon: "building" },
   { id: "config", label: "Config", icon: "settings" },
   { id: "audit", label: "Audit Log", icon: "eye" },
 ];
@@ -27,13 +28,13 @@ export default function AdminDashboardPage() {
         <div style={{ padding: "8px 10px", fontWeight: 700, fontSize: 14 }}>Admin Panel</div>
         <div className="hairline" />
         <div style={{ fontSize: 10, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: ".06em", padding: "8px 10px 2px" }}>Master data</div>
-        {TABS.slice(0, 6).map(t => (
+        {TABS.slice(0, 7).map(t => (
           <div key={t.id} className={"nav-item " + (tab === t.id ? "active" : "")} onClick={() => setTab(t.id)} style={{ cursor: "pointer" }}>
             <Icon name={t.icon} size={15} /><span>{t.label}</span>
           </div>
         ))}
         <div style={{ fontSize: 10, color: "var(--ink-4)", textTransform: "uppercase", letterSpacing: ".06em", padding: "8px 10px 2px" }}>System</div>
-        {TABS.slice(6).map(t => (
+        {TABS.slice(7).map(t => (
           <div key={t.id} className={"nav-item " + (tab === t.id ? "active" : "")} onClick={() => setTab(t.id)} style={{ cursor: "pointer" }}>
             <Icon name={t.icon} size={15} /><span>{t.label}</span>
           </div>
@@ -50,6 +51,7 @@ export default function AdminDashboardPage() {
         {tab === "bookings" && <BookingsTab toast={toast} />}
         {tab === "pricing" && <PricingTab toast={toast} />}
         {tab === "reps" && <RepsTab toast={toast} />}
+        {tab === "mgrs" && <MgrsTab toast={toast} />}
         {tab === "config" && <ConfigTab toast={toast} />}
         {tab === "audit" && <AuditTab />}
       </main>
@@ -64,7 +66,7 @@ function TheatresTab({ toast }: { toast: any }) {
   const [fm, setFm] = useState({ name: "", city: "", location: "", total_seats: "", number_of_screens: "1" });
   const [sv, setSv] = useState(false);
   useEffect(() => { load(); }, []);
-  async function load() { setLd(true); const { data: d } = await (supabase as any).from("theatres").select("*").order("name"); setData(d || []); setLd(false); }
+  async function load() { setLd(true); const { data: d } = await (supabase as any).from("theatres").select("*, theatre_pricing(id), theatre_bookings(id, is_active), theatre_reps(id, is_active)").order("name"); setData(d || []); setLd(false); }
   async function add() {
     if (!fm.name.trim() || !fm.city.trim()) { toast.warning("Name and City required"); return; }
     setSv(true);
@@ -85,8 +87,16 @@ function TheatresTab({ toast }: { toast: any }) {
         <button className="btn btn-primary" onClick={add} disabled={sv} style={{ height: 36 }}>{sv ? "..." : "Add"}</button>
       </div>
     </div>}
-    <Tbl ld={ld} cols={["Name", "City", "Location", { n: "Seats", c: "num" }, { n: "Screens", c: "num" }]}
-      rows={data.map(r => [{ v: r.name, b: true }, r.city, r.location, r.total_seats, r.number_of_screens || 1])} empty="No theatres." />
+    <Tbl ld={ld} cols={["Name", "City", { n: "Seats", c: "num" }, "Pricing", "Film", "Rep", "Status"]}
+      rows={data.map(r => {
+        const hasPricing = (r.theatre_pricing?.length || 0) > 0;
+        const hasBooking = (r.theatre_bookings || []).some((b: any) => b.is_active);
+        const hasRep = (r.theatre_reps || []).some((b: any) => b.is_active);
+        const ready = hasPricing && hasBooking && hasRep;
+        return [{ v: r.name, b: true }, r.city, r.total_seats,
+          hasPricing ? "Yes" : "No", hasBooking ? "Yes" : "No", hasRep ? "Yes" : "No",
+          ready ? "Ready" : "Setup needed"];
+      })} empty="No theatres." />
   </div>);
 }
 
@@ -161,7 +171,7 @@ function BookingsTab({ toast }: { toast: any }) {
   const [films, setFilms] = useState<any[]>([]);
   const [ld, setLd] = useState(true);
   const [sf, setSf] = useState(false);
-  const [fm, setFm] = useState({ theatre_id: "", film_id: "", screen_no: "1", start_date: "", distributor_share_pct: "50", bms_commission_pct: "8", district_commission_pct: "5" });
+  const [fm, setFm] = useState({ theatre_id: "", film_id: "", screen_no: "1", start_date: "", distributor_share_pct: "50", bms_commission_pct: "8", district_commission_pct: "5", first_show_time: "11:00", num_shows: "4", show_gap_minutes: "270" });
   const [sv, setSv] = useState(false);
 
   useEffect(() => { load(); }, []);
@@ -186,6 +196,9 @@ function BookingsTab({ toast }: { toast: any }) {
       distributor_share_pct: parseFloat(fm.distributor_share_pct) || 50,
       bms_commission_pct: parseFloat(fm.bms_commission_pct) || 8,
       district_commission_pct: parseFloat(fm.district_commission_pct) || 5,
+      first_show_time: fm.first_show_time || "11:00",
+      num_shows: parseInt(fm.num_shows) || 4,
+      show_gap_minutes: parseInt(fm.show_gap_minutes) || 270,
     });
     setSv(false);
     if (error) { toast.error(error.message); return; }
@@ -201,15 +214,34 @@ function BookingsTab({ toast }: { toast: any }) {
         <div><label className="label">Screen</label><input className="input" type="number" value={fm.screen_no} onChange={e => setFm({ ...fm, screen_no: e.target.value })} /></div>
         <div><label className="label">Start date *</label><input className="input" type="date" value={fm.start_date} onChange={e => setFm({ ...fm, start_date: e.target.value })} /></div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 8, alignItems: "end", marginTop: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr auto", gap: 8, alignItems: "end", marginTop: 8 }}>
         <div><label className="label">Dist. share %</label><input className="input" type="number" value={fm.distributor_share_pct} onChange={e => setFm({ ...fm, distributor_share_pct: e.target.value })} /></div>
         <div><label className="label">BMS comm. %</label><input className="input" type="number" value={fm.bms_commission_pct} onChange={e => setFm({ ...fm, bms_commission_pct: e.target.value })} /></div>
-        <div><label className="label">District comm. %</label><input className="input" type="number" value={fm.district_commission_pct} onChange={e => setFm({ ...fm, district_commission_pct: e.target.value })} /></div>
+        <div><label className="label">District %</label><input className="input" type="number" value={fm.district_commission_pct} onChange={e => setFm({ ...fm, district_commission_pct: e.target.value })} /></div>
+        <div><label className="label">1st show</label><input className="input" type="time" value={fm.first_show_time} onChange={e => setFm({ ...fm, first_show_time: e.target.value })} /></div>
+        <div><label className="label">Shows/day</label><input className="input" type="number" value={fm.num_shows} onChange={e => setFm({ ...fm, num_shows: e.target.value })} min="1" max="6" /></div>
         <button className="btn btn-primary" onClick={add} disabled={sv} style={{ height: 36 }}>{sv ? "..." : "Assign"}</button>
       </div>
     </div>}
-    <Tbl ld={ld} cols={["Theatre", "Film", { n: "Screen", c: "num" }, "Start", { n: "Dist%", c: "num" }, { n: "BMS%", c: "num" }, "Active"]}
-      rows={data.map((b: any) => [{ v: b.theatres?.name || "-", b: true }, b.films?.title || "-", b.screen_no, b.start_date ? new Date(b.start_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "-", b.distributor_share_pct + "%", b.bms_commission_pct + "%", b.is_active ? "Active" : "Ended"])} empty="No bookings. Assign a film to a theatre to start." />
+    <div style={{ padding: 24 }}>{ld ? <Loader /> :
+      <table className="tbl"><thead><tr><th>Theatre</th><th>Film</th><th className="num">Screen</th><th>Start</th><th className="num">Dist%</th><th>Shows</th><th>1st show</th><th>Status</th><th></th></tr></thead>
+        <tbody>{data.map((b: any) => (
+          <tr key={b.id} style={{ opacity: b.is_active ? 1 : 0.5 }}>
+            <td style={{ fontWeight: 600 }}>{b.theatres?.name || "-"}</td>
+            <td>{b.films?.title || "-"}</td>
+            <td className="num">{b.screen_no}</td>
+            <td>{b.start_date ? new Date(b.start_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "-"}</td>
+            <td className="num">{b.distributor_share_pct}%</td>
+            <td className="num">{b.num_shows || 4}/day</td>
+            <td>{b.first_show_time ? String(b.first_show_time).slice(0, 5) : "11:00"}</td>
+            <td>{b.is_active ? <span style={{ color: "var(--ok)", fontSize: 12 }}>Active</span> : <span style={{ color: "var(--ink-4)", fontSize: 12 }}>Ended</span>}</td>
+            <td>{b.is_active && <button className="btn btn-sm" style={{ fontSize: 11, color: "var(--bad)" }} onClick={async () => {
+              await (supabase as any).from("theatre_bookings").update({ is_active: false, end_date: new Date().toISOString().split("T")[0] }).eq("id", b.id);
+              toast.success("Booking ended"); load();
+            }}>End run</button>}</td>
+          </tr>
+        ))}
+        {data.length === 0 && <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--ink-3)", padding: 24 }}>No bookings.</td></tr>}</tbody></table>}</div>
   </div>);
 }
 
@@ -314,6 +346,52 @@ function RepsTab({ toast }: { toast: any }) {
     </div>}
     <Tbl ld={ld} cols={["Rep name", "Phone", "Theatre", "Active"]}
       rows={data.map((r: any) => [{ v: r.users?.name || "-", b: true }, r.users?.phone || "-", r.theatres?.name || "-", r.is_active ? "Active" : "Inactive"])} empty="No reps assigned. Assign reps to theatres so they can submit CDRs." />
+  </div>);
+}
+
+/* ═══ NEW: Assign Manager → Theatre ═══ */
+function MgrsTab({ toast }: { toast: any }) {
+  const [theatres, setTheatres] = useState<any[]>([]);
+  const [managers, setManagers] = useState<any[]>([]);
+  const [ld, setLd] = useState(true);
+  const [sf, setSf] = useState(false);
+  const [fm, setFm] = useState({ theatre_id: "", manager_id: "" });
+  const [sv, setSv] = useState(false);
+
+  useEffect(() => { load(); }, []);
+  async function load() {
+    setLd(true);
+    const [{ data: t }, { data: m }] = await Promise.all([
+      (supabase as any).from("theatres").select("id, name, manager_id, profiles!theatres_manager_id_fkey(name, phone)").order("name"),
+      (supabase as any).from("profiles").select("id, name, phone, role").in("role", ["exhibitor", "manager"]).order("name"),
+    ]);
+    setTheatres(t || []); setManagers(m || []); setLd(false);
+    if (t?.length && !fm.theatre_id) setFm(p => ({ ...p, theatre_id: t[0].id }));
+    if (m?.length && !fm.manager_id) setFm(p => ({ ...p, manager_id: m[0].id }));
+  }
+  async function assign() {
+    if (!fm.theatre_id || !fm.manager_id) { toast.warning("Select both"); return; }
+    setSv(true);
+    const { error: e1 } = await (supabase as any).from("theatres").update({ manager_id: fm.manager_id }).eq("id", fm.theatre_id);
+    const { error: e2 } = await (supabase as any).from("profiles").update({ theatre_id: fm.theatre_id }).eq("id", fm.manager_id);
+    setSv(false);
+    if (e1 || e2) { toast.error((e1 || e2)?.message || "Failed"); return; }
+    toast.success("Manager assigned!"); setSf(false); load();
+  }
+  return (<div>
+    <PageHeader title="Manager → Theatre" sub="Assign which manager approves CDRs for which theatre" actions={<button className="btn btn-primary btn-sm" onClick={() => setSf(!sf)}>+ Assign Manager</button>} />
+    {sf && <div style={{ padding: "14px 24px", background: "var(--accent-soft)", borderBottom: "1px solid var(--line)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "end" }}>
+        <div><label className="label">Theatre *</label><Sel value={fm.theatre_id} onChange={v => setFm({ ...fm, theatre_id: v })} opts={theatres.map((t: any) => ({ v: t.id, l: t.name }))} /></div>
+        <div><label className="label">Manager *</label><Sel value={fm.manager_id} onChange={v => setFm({ ...fm, manager_id: v })} opts={managers.map((m: any) => ({ v: m.id, l: m.name + " (" + (m.phone || "") + ")" }))} /></div>
+        <button className="btn btn-primary" onClick={assign} disabled={sv} style={{ height: 36 }}>{sv ? "..." : "Assign"}</button>
+      </div>
+    </div>}
+    <div style={{ padding: 24 }}>{ld ? <Loader /> :
+      <table className="tbl"><thead><tr><th>Theatre</th><th>Manager</th><th>Phone</th></tr></thead>
+        <tbody>{theatres.map((t: any) => (
+          <tr key={t.id}><td style={{ fontWeight: 600 }}>{t.name}</td><td>{t.profiles?.name || <span style={{ color: "var(--bad)", fontSize: 12 }}>Not assigned</span>}</td><td style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>{t.profiles?.phone || "-"}</td></tr>
+        ))}</tbody></table>}</div>
   </div>);
 }
 

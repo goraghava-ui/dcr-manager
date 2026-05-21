@@ -39,7 +39,7 @@ export default function RepHomePage() {
       if (err) throw new Error(err.message);
 
       // Use scheduler for show timings (4h30m intervals)
-      const schedule = generateDailySchedule();
+      const schedule = generateDailySchedule({ firstShowTime: uc.firstShowTime, intervalMinutes: uc.showGapMinutes, showCount: uc.numShows, showDurationMinutes: 150, cdrWindowMinutes: 60 });
 
       setShows(schedule.map((slot) => {
         const cdr = cdrs?.find((c: any) => c.show_number === slot.showNumber);
@@ -63,7 +63,7 @@ export default function RepHomePage() {
   // Auto-refresh when show status transitions (e.g., show ends)
   useEffect(() => {
     if (shows.length === 0) return;
-    const schedule = generateDailySchedule();
+    const schedule = generateDailySchedule({ firstShowTime: uc.firstShowTime, intervalMinutes: uc.showGapMinutes, showCount: uc.numShows, showDurationMinutes: 150, cdrWindowMinutes: 60 });
     const cleanup = createScheduleTimer(schedule, loadShows);
     return cleanup;
   }, [shows.length]);
@@ -78,7 +78,7 @@ export default function RepHomePage() {
   const progressPct = shows.length > 0 ? (approvedCount / shows.length) * 100 : 0;
 
   // Next show info
-  const schedule = generateDailySchedule();
+  const schedule = generateDailySchedule({ firstShowTime: uc.firstShowTime, intervalMinutes: uc.showGapMinutes, showCount: uc.numShows, showDurationMinutes: 150, cdrWindowMinutes: 60 });
   const { nextShow, minutesUntilNext, currentShow } = getNextShowInfo(schedule);
 
   return (

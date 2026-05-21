@@ -33,6 +33,11 @@ export interface UserContext {
   bmsCommissionPct: number;
   districtCommissionPct: number;
 
+  // Show schedule
+  firstShowTime: string;
+  numShows: number;
+  showGapMinutes: number;
+
   // Pricing
   pricing: Array<{
     className: string;
@@ -54,6 +59,7 @@ const EMPTY: UserContext = {
   theatreId: null, theatreName: null, theatreCapacity: 0,
   bookingId: null, filmTitle: null, filmDay: 0, screenNo: 1,
   distributorSharePct: 50, bmsCommissionPct: 8, districtCommissionPct: 5,
+  firstShowTime: "11:00", numShows: 4, showGapMinutes: 270,
   pricing: [], loading: true, error: null, refetch: () => {},
 };
 
@@ -82,6 +88,7 @@ export function useUserContext(): UserContext {
           theatreId: null, theatreName: "All Theatres", theatreCapacity: 0,
           bookingId: null, filmTitle: null, filmDay: 0, screenNo: 1,
           distributorSharePct: 50, bmsCommissionPct: 8, districtCommissionPct: 5,
+          firstShowTime: "11:00", numShows: 4, showGapMinutes: 270,
           pricing: [],
           loading: false, error: null,
           refetch: fetchContext,
@@ -127,12 +134,15 @@ export function useUserContext(): UserContext {
       let distributorSharePct = 50;
       let bmsCommissionPct = 8;
       let districtCommissionPct = 5;
+      let firstShowTime = "11:00";
+      let numShows = 4;
+      let showGapMinutes = 270;
 
       if (theatreId) {
         const today = new Date().toISOString().split("T")[0];
         const { data: booking } = await (supabase as any)
           .from("theatre_bookings")
-          .select("id, film_id, screen_no, start_date, distributor_share_pct, bms_commission_pct, district_commission_pct")
+          .select("id, film_id, screen_no, start_date, distributor_share_pct, bms_commission_pct, district_commission_pct, first_show_time, num_shows, show_gap_minutes")
           .eq("theatre_id", theatreId)
           .eq("is_active", true)
           .lte("start_date", today)
@@ -146,6 +156,9 @@ export function useUserContext(): UserContext {
           distributorSharePct = Number(booking.distributor_share_pct) || 50;
           bmsCommissionPct = Number(booking.bms_commission_pct) || 8;
           districtCommissionPct = Number(booking.district_commission_pct) || 5;
+          if (booking.first_show_time) firstShowTime = String(booking.first_show_time).slice(0, 5);
+          if (booking.num_shows) numShows = booking.num_shows;
+          if (booking.show_gap_minutes) showGapMinutes = booking.show_gap_minutes;
 
           // Fetch film
           const { data: film } = await (supabase as any)
@@ -191,6 +204,7 @@ export function useUserContext(): UserContext {
         theatreId, theatreName, theatreCapacity,
         bookingId, filmTitle, filmDay, screenNo,
         distributorSharePct, bmsCommissionPct, districtCommissionPct,
+        firstShowTime, numShows, showGapMinutes,
         pricing,
         loading: false, error: null,
         refetch: fetchContext,

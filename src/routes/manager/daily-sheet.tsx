@@ -30,7 +30,7 @@ export default function DailySheetPage() {
 
   async function loadSheet() {
     setLoading(true);
-    const schedule = generateDailySchedule();
+    const schedule = generateDailySchedule({ firstShowTime: uc.firstShowTime, intervalMinutes: uc.showGapMinutes, showCount: uc.numShows, showDurationMinutes: 150, cdrWindowMinutes: 60 });
     const { data: cdrs } = await (supabase as any).from("cdrs")
       .select("*")
       .eq("theatre_booking_id", uc.bookingId)

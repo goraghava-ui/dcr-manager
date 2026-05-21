@@ -48,7 +48,7 @@ export default function ManagerDashboardPage() {
 
       if (err) throw new Error(err.message);
 
-      const showTimings = generateDailySchedule();
+      const showTimings = generateDailySchedule({ firstShowTime: uc.firstShowTime, intervalMinutes: uc.showGapMinutes, showCount: uc.numShows, showDurationMinutes: 150, cdrWindowMinutes: 60 });
       const hours = showTimings.map(s => {
         const [h, m] = s.startTime.split(":").map(Number);
         return h + m / 60;
