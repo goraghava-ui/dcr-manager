@@ -98,15 +98,30 @@ export function useUserContext(): UserContext {
 
       // 1. Find user's theatre (only for rep/manager)
       if (role === "rep") {
-        const { data: rep } = await (supabase as any)
+        // Get all theatres assigned to this rep
+        const { data: reps } = await (supabase as any)
           .from("theatre_reps")
           .select("theatre_id")
           .eq("user_id", uid)
-          .eq("is_active", true)
-          .limit(1)
-          .single();
-        theatreId = rep?.theatre_id || null;
-      } else if (role === "manager") {
+          .eq("is_active", true);
+        
+        if (reps?.length) {
+          // Prefer theatre with active booking
+          const today = new Date().toISOString().split("T")[0];
+          for (const r of reps) {
+            const { data: bk } = await (supabase as any)
+              .from("theatre_bookings")
+              .select("id")
+              .eq("theatre_id", r.theatre_id)
+              .eq("is_active", true)
+              .lte("start_date", today)
+              .limit(1);
+            if (bk?.length) { theatreId = r.theatre_id; break; }
+          }
+          // Fallback to first theatre if none have bookings
+          if (!theatreId) theatreId = reps[0].theatre_id;
+        }
+      } else if (role === "manager" || role === "exhibitor") {
         const { data: prof } = await (supabase as any)
           .from("profiles")
           .select("theatre_id")
