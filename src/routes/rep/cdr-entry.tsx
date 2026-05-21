@@ -39,12 +39,16 @@ export default function CDREntryPage() {
       .eq("show_date", todayISO)
       .eq("show_number", showNumber)
       .maybeSingle()
-      .then(({ data }: any) => {
+      .then(async ({ data }: any) => {
         if (data) {
           setExistingId(data.id);
           setExistingStatus(data.status);
           setCh({ bms: data.bms_qty || 0, district: data.district_qty || 0, counter: data.counter_qty || 0, comp: data.comp_qty || 0 });
-          if (data.photo_url) setPhotoPreview(data.photo_url);
+          if (data.photo_url) {
+            const { data: signedData } = await supabase.storage.from("cdr-photos").createSignedUrl(data.photo_url, 3600);
+            if (signedData?.signedUrl) setPhotoPreview(signedData.signedUrl);
+            else setPhotoPreview(data.photo_url);
+          }
           // Load class entries
           if (data.cdr_class_entries?.length && uc.pricing.length) {
             const newQtys = uc.pricing.map((p: any) => {

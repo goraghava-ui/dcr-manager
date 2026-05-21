@@ -17,6 +17,27 @@ export default function DailySheetPage() {
   const [loading, setLoading] = useState(true);
   const [dateStr, setDateStr] = useState(new Date().toISOString().split("T")[0]);
 
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submitDailySheet() {
+    if (submitted.length === 0) { toast.warning("No CDRs to submit"); return; }
+    setSubmitting(true);
+    try {
+      // Lock all CDRs for this date (set status to approved if submitted)
+      const todayCdrs = shows.filter(s => s.status === "submitted");
+      for (const s of todayCdrs) {
+        if (s.status === "submitted") {
+          const { data: { user } } = await supabase.auth.getUser();
+          await (supabase as any).from("cdrs").update({ status: "approved", approved_by: user?.id, approved_at: new Date().toISOString() })
+            .eq("theatre_booking_id", uc.bookingId).eq("show_date", dateStr).eq("show_number", s.show);
+        }
+      }
+      toast.success("Daily sheet submitted! " + submitted.length + " CDRs approved and locked.");
+      loadSheet();
+    } catch (err: any) { toast.error(err.message); }
+    setSubmitting(false);
+  }
+
   function handleNav(id: string) {
     if (id === "dash") navigate("/manager");
     if (id === "cdrs") navigate("/manager/cdrs");
@@ -72,6 +93,7 @@ export default function DailySheetPage() {
           breadcrumb={["Manager", "Daily Sheet"]}
           actions={<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input type="date" className="input" value={dateStr} onChange={e => setDateStr(e.target.value)} style={{ height: 32, fontSize: 12 }} />
+            <button className="btn btn-primary btn-sm" onClick={submitDailySheet} disabled={submitting || submitted.length === 0}>{submitting ? "Submitting..." : "Submit Daily Sheet"}</button>
           </div>} />
         <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16 }}>
           {/* Summary */}
