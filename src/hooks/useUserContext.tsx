@@ -38,6 +38,10 @@ export interface UserContext {
   numShows: number;
   showGapMinutes: number;
 
+  // Assigned theatres (for rep theatre picker)
+  assignedTheatres: Array<{ id: string; name: string; hasBooking: boolean }>;
+  switchTheatre: (theatreId: string) => void;
+
   // Pricing
   pricing: Array<{
     className: string;
@@ -60,6 +64,7 @@ const EMPTY: UserContext = {
   bookingId: null, filmTitle: null, filmDay: 0, screenNo: 1,
   distributorSharePct: 50, bmsCommissionPct: 8, districtCommissionPct: 5,
   firstShowTime: "11:00", numShows: 4, showGapMinutes: 270,
+  assignedTheatres: [], switchTheatre: () => {},
   pricing: [], loading: true, error: null, refetch: () => {},
 };
 
@@ -89,6 +94,7 @@ export function useUserContext(): UserContext {
           bookingId: null, filmTitle: null, filmDay: 0, screenNo: 1,
           distributorSharePct: 50, bmsCommissionPct: 8, districtCommissionPct: 5,
           firstShowTime: "11:00", numShows: 4, showGapMinutes: 270,
+          assignedTheatres: [], switchTheatre: () => {},
           pricing: [],
           loading: false, error: null,
           refetch: fetchContext,
@@ -97,27 +103,30 @@ export function useUserContext(): UserContext {
       }
 
       // 1. Find user's theatre (only for rep/manager)
+      let assignedTheatres: UserContext["assignedTheatres"] = [];
+      
       if (role === "rep") {
-        // Get all theatres assigned to this rep
+        // Get all theatres assigned to this rep with names
         const { data: reps } = await (supabase as any)
           .from("theatre_reps")
-          .select("theatre_id")
+          .select("theatre_id, theatres(name)")
           .eq("user_id", uid)
           .eq("is_active", true);
         
         if (reps?.length) {
-          // Prefer theatre with active booking
           const today = new Date().toISOString().split("T")[0];
+          
+          // Build assigned theatres list with booking status
           for (const r of reps) {
             const { data: bk } = await (supabase as any)
-              .from("theatre_bookings")
-              .select("id")
-              .eq("theatre_id", r.theatre_id)
-              .eq("is_active", true)
-              .lte("start_date", today)
-              .limit(1);
-            if (bk?.length) { theatreId = r.theatre_id; break; }
+              .from("theatre_bookings").select("id")
+              .eq("theatre_id", r.theatre_id).eq("is_active", true)
+              .lte("start_date", today).limit(1);
+            const hasBooking = (bk?.length || 0) > 0;
+            assignedTheatres.push({ id: r.theatre_id, name: r.theatres?.name || "Theatre", hasBooking });
+            if (hasBooking && !theatreId) theatreId = r.theatre_id;
           }
+          
           // Fallback to first theatre if none have bookings
           if (!theatreId) theatreId = reps[0].theatre_id;
         }
@@ -220,6 +229,37 @@ export function useUserContext(): UserContext {
         bookingId, filmTitle, filmDay, screenNo,
         distributorSharePct, bmsCommissionPct, districtCommissionPct,
         firstShowTime, numShows, showGapMinutes,
+        assignedTheatres,
+        switchTheatre: (newTheatreId: string) => {
+          // Force refetch with specific theatre
+          setCtx(p => ({ ...p, loading: true }));
+          (async () => {
+            // Manually set theatreId and re-run fetch
+            const today = new Date().toISOString().split("T")[0];
+            const { data: theatre } = await (supabase as any).from("theatres").select("name, total_seats").eq("id", newTheatreId).single();
+            const { data: booking } = await (supabase as any).from("theatre_bookings")
+              .select("id, film_id, screen_no, start_date, distributor_share_pct, bms_commission_pct, district_commission_pct, first_show_time, num_shows, show_gap_minutes")
+              .eq("theatre_id", newTheatreId).eq("is_active", true).lte("start_date", today).order("start_date", { ascending: false }).limit(1).single();
+            let newFilmTitle = ""; let newFilmDay = 0;
+            if (booking?.film_id) {
+              const { data: film } = await (supabase as any).from("films").select("title, release_date").eq("id", booking.film_id).single();
+              if (film) { newFilmTitle = film.title; newFilmDay = Math.max(1, Math.ceil((Date.now() - new Date(film.release_date).getTime()) / 86400000) + 1); }
+            }
+            const { data: prices } = await (supabase as any).from("theatre_pricing").select("class_name, price, sno_from, sno_to, capacity, display_order").eq("theatre_id", newTheatreId).order("display_order");
+            setCtx(p => ({
+              ...p,
+              theatreId: newTheatreId, theatreName: theatre?.name || "", theatreCapacity: theatre?.total_seats || 0,
+              bookingId: booking?.id || null, filmTitle: newFilmTitle, filmDay: newFilmDay, screenNo: booking?.screen_no || 1,
+              distributorSharePct: Number(booking?.distributor_share_pct) || 50,
+              bmsCommissionPct: Number(booking?.bms_commission_pct) || 8,
+              districtCommissionPct: Number(booking?.district_commission_pct) || 5,
+              firstShowTime: booking?.first_show_time ? String(booking.first_show_time).slice(0, 5) : "11:00",
+              numShows: booking?.num_shows || 4, showGapMinutes: booking?.show_gap_minutes || 270,
+              pricing: (prices || []).map((p: any) => ({ className: p.class_name, price: Number(p.price), pricePaise: Math.round(Number(p.price) * 100), snoFrom: p.sno_from, snoTo: p.sno_to, capacity: p.capacity })),
+              loading: false, error: booking ? null : "No active booking for this theatre",
+            }));
+          })();
+        },
         pricing,
         loading: false, error: null,
         refetch: fetchContext,

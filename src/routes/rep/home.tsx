@@ -93,7 +93,19 @@ export default function RepHomePage() {
 
       <div style={{ padding: "16px" }}>
         <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--ink-3)" }}>Today · {dateStr}</div>
-        <div className="m-h1" style={{ marginTop: 4 }}>{uc.theatreName || "Theatre"}</div>
+        
+        {/* Theatre picker — show when multiple theatres assigned */}
+        {uc.assignedTheatres.length > 1 ? (
+          <select className="input" value={uc.theatreId || ""} onChange={e => uc.switchTheatre(e.target.value)}
+            style={{ height: 36, fontSize: 16, fontWeight: 700, marginTop: 4, width: "100%", border: "1.5px solid var(--accent)", borderRadius: 8 }}>
+            {uc.assignedTheatres.map(t => (
+              <option key={t.id} value={t.id}>{t.name}{t.hasBooking ? "" : " (no film)"}</option>
+            ))}
+          </select>
+        ) : (
+          <div className="m-h1" style={{ marginTop: 4 }}>{uc.theatreName || "Theatre"}</div>
+        )}
+        
         {uc.filmTitle && (
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
             <PosterPlaceholder color="#1f3bb8" text={uc.filmTitle.toUpperCase()} sub={`Day ${uc.filmDay}`} />
