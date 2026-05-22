@@ -20,9 +20,9 @@ export default function RepHomePage() {
 
   useEffect(() => {
     if (!uc.loading && uc.bookingId) loadShows();
-    if (!uc.loading && !uc.bookingId && !uc.error) {
+    if (!uc.loading && !uc.bookingId) {
       setLoading(false);
-      setError("No active booking found for your theatre. Contact admin.");
+      // Don't crash — show info state instead
     }
   }, [uc.loading, uc.bookingId]);
 
@@ -70,6 +70,17 @@ export default function RepHomePage() {
 
   if (uc.loading || loading) return <LoadingScreen />;
   if (error) return <ErrorScreen msg={error} onRetry={loadShows} />;
+  if (!uc.loading && !uc.bookingId && !loading) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "80vh", padding: 24, textAlign: "center" }}>
+      <div style={{ fontSize: 40, marginBottom: 12 }}>🎬</div>
+      <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>No active film booking</div>
+      <div style={{ fontSize: 14, color: "var(--ink-3)", maxWidth: 300, lineHeight: 1.6 }}>
+        {uc.theatreName ? `${uc.theatreName} doesn't have a film assigned right now.` : "You are not assigned to any theatre yet."}
+        <br />Ask your Admin to assign a film to your theatre.
+      </div>
+      <button className="btn btn-primary" onClick={() => uc.refetch()} style={{ marginTop: 16 }}>Refresh</button>
+    </div>
+  );
 
   const submitted = shows.filter(s => s.status === "approved" || s.status === "submitted");
   const grossTotal = shows.filter(s => s.status !== "locked").reduce((a, s) => a + s.gross, 0);

@@ -147,7 +147,7 @@ export function useUserContext(): UserContext {
           .from("theatres")
           .select("name, total_seats")
           .eq("id", theatreId)
-          .single();
+          .maybeSingle();
         theatreName = theatre?.name || "";
         theatreCapacity = theatre?.total_seats || 0;
       }
@@ -166,15 +166,16 @@ export function useUserContext(): UserContext {
 
       if (theatreId && theatreId !== "null") {
         const today = new Date().toISOString().split("T")[0];
-        const { data: booking } = await (supabase as any)
+        const { data: bookings, error: bkErr } = await (supabase as any)
           .from("theatre_bookings")
           .select("id, film_id, screen_no, start_date, distributor_share_pct, bms_commission_pct, district_commission_pct, first_show_time, num_shows, show_gap_minutes")
           .eq("theatre_id", theatreId)
           .eq("is_active", true)
           .lte("start_date", today)
           .order("start_date", { ascending: false })
-          .limit(1)
-          .single();
+          .limit(1);
+        
+        const booking = bookings?.[0] || null;
 
         if (booking) {
           bookingId = booking.id;
@@ -191,7 +192,7 @@ export function useUserContext(): UserContext {
             .from("films")
             .select("title, release_date")
             .eq("id", booking.film_id)
-            .single();
+            .maybeSingle();
 
           if (film) {
             filmTitle = film.title || "";
