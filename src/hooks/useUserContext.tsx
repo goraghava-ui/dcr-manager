@@ -69,13 +69,15 @@ const EMPTY: UserContext = {
 };
 
 export function useUserContext(): UserContext {
-  const { user, role, profile } = useAuth();
+  const { user, role, profile, loading: authLoading } = useAuth();
   const [ctx, setCtx] = useState<UserContext>(EMPTY);
 
   async function fetchContext() {
+    if (authLoading) return; // Wait for auth to finish
     if (!user?.id) return;
     const uid = user.id;
     if (!uid || uid === "null" || uid === "undefined") return;
+    if (!role) return; // Wait for role to be set
 
     setCtx((p) => ({ ...p, loading: true, error: null }));
 
@@ -278,8 +280,8 @@ export function useUserContext(): UserContext {
   }
 
   useEffect(() => {
-    if (user?.id && role) fetchContext();
-  }, [user?.id, role]);
+    if (!authLoading && user?.id && role) fetchContext();
+  }, [authLoading, user?.id, role]);
 
   return ctx;
 }
